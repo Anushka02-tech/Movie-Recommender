@@ -1,16 +1,11 @@
 """
-DAYS 8-9: Evaluation - Train/Test Split + RMSE
-=================================================
-So far we've trained on ALL the ratings and eyeballed the results.
-Now we do this properly: hold out some ratings as a test set, train
-only on the rest, then measure how close our predictions are to the
-ratings we hid.
+Evaluation: Train/Test Split + RMSE
+======================================
+Holds out a test set of ratings, trains only on the rest, then measures
+RMSE (Root Mean Squared Error) between predicted and actual held-out
+ratings. Lower is better; a perfect model scores 0.
 
-This produces the number that goes in your report: RMSE (Root Mean
-Squared Error). Lower is better. A perfect model = 0. Random guessing
-would give something like 1.5-2.0 on a 1-5 scale.
-
-Run this AFTER day1_setup.py.
+Requires ratings_25m_filtered.csv from day1_setup.py.
 """
 
 import numpy as np
@@ -19,14 +14,14 @@ import pandas as pd
 np.random.seed(42)
 
 # -----------------------------------------------------------
-# STEP 1: Load raw ratings (not the pre-built Y/R this time,
-# because we need to split BEFORE building the matrix)
+# Load raw ratings (not the pre-built Y/R this time,
+# because the split needs to happen before building the matrix)
 # -----------------------------------------------------------
 
 ratings = pd.read_csv('ratings_25m_filtered.csv')
 
 # -----------------------------------------------------------
-# STEP 2: Train/test split (80/20)
+# Train/test split (80/20)
 # -----------------------------------------------------------
 
 shuffled = ratings.sample(frac=1, random_state=42).reset_index(drop=True)
@@ -37,7 +32,7 @@ test_df = shuffled.iloc[split_point:]
 print(f"Train ratings: {len(train_df)}, Test ratings: {len(test_df)}")
 
 # -----------------------------------------------------------
-# STEP 3: Build Y_train / R_train from the TRAINING set only
+# Build Y_train / R_train from the training set only
 # (test ratings are treated as if they don't exist, during training)
 # -----------------------------------------------------------
 
@@ -60,7 +55,7 @@ R_train[train_movie_indices, train_user_indices] = 1
 print(f"Y_train shape: {Y_train.shape}")
 
 # -----------------------------------------------------------
-# STEP 4: Mean-normalize (same as before, using TRAIN data only)
+# Mean-normalize (using training data only)
 # -----------------------------------------------------------
 
 def normalize_ratings(Y, R):
@@ -77,7 +72,7 @@ def normalize_ratings(Y, R):
 Y_norm, Y_mean = normalize_ratings(Y_train, R_train)
 
 # -----------------------------------------------------------
-# STEP 5: Train the model (same code as Days 3-5)
+# Train the model (same approach as the full training script)
 # -----------------------------------------------------------
 
 def cost_function(params, Y, R, num_users, num_movies, num_features, lam):
@@ -116,7 +111,7 @@ X, Theta = train_collaborative_filtering(Y_norm, R_train, num_features=15,
 predictions = X @ Theta.T + Y_mean.reshape(-1, 1)
 
 # -----------------------------------------------------------
-# STEP 6: Evaluate on the TEST set (ratings the model never saw)
+# Evaluate on the held-out test set (ratings the model never saw)
 # -----------------------------------------------------------
 
 def rmse(predictions, df, movie_id_to_idx, user_id_to_idx):
@@ -130,7 +125,7 @@ cf_rmse = rmse(predictions, test_df, movie_id_to_idx, user_id_to_idx)
 print(f"\nCollaborative Filtering RMSE on test set: {cf_rmse:.4f}")
 
 # -----------------------------------------------------------
-# STEP 7: Compare against the baseline (predict each movie's
+# Compare against the baseline (predict each movie's
 # average rating from the TRAINING set, for every user)
 # -----------------------------------------------------------
 
@@ -142,7 +137,7 @@ baseline_rmse = np.sqrt(np.mean((test_baseline_preds - test_df['rating'].values)
 print(f"Baseline (movie average) RMSE on test set: {baseline_rmse:.4f}")
 
 # -----------------------------------------------------------
-# STEP 8: Summary
+# Summary
 # -----------------------------------------------------------
 
 improvement = (baseline_rmse - cf_rmse) / baseline_rmse * 100

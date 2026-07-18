@@ -1,15 +1,10 @@
 """
-DAYS 11-12: Streamlit Interface
-==================================
-A simple, demoable web app for your recommender system.
-
-Install streamlit first (one-time):
-    pip install streamlit
+Streamlit Interface
+======================
+Interactive web app for the movie recommender system.
 
 Run with:
     streamlit run app.py
-
-(NOT "python app.py" -- streamlit apps are launched differently)
 """
 
 import streamlit as st
@@ -157,7 +152,7 @@ def genre_recommend(selected_genres, n=5, min_ratings=50):
     return result[['title', 'mean']].rename(columns={'mean': 'predicted_rating'})
 
 # -----------------------------------------------------------
-# Recommendation function (same logic as Days 3-5)
+# Recommendation function (same logic as the training script)
 # -----------------------------------------------------------
 
 def recommend(user_idx, n=5, min_ratings=20):

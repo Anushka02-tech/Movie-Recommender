@@ -1,18 +1,12 @@
 """
-DAY 1: Movie Recommender System - Setup & Data Exploration
-============================================================
+Movie Recommender System - Data Exploration & Baseline
+========================================================
+Loads the MovieLens 100K ratings data, explores basic statistics,
+builds the user-movie rating matrix, and establishes a non-personalized
+baseline recommender to compare the collaborative filtering model against.
 
-STEP 0: GET THE DATA (do this first, manually)
-------------------------------------------------
-1. Go to: https://grouplens.org/datasets/movielens/
-2. Download "ml-100k.zip" (the small 100K dataset, ~5MB)
-3. Unzip it into the same folder as this script, so you have:
-     ml-100k/u.data
-     ml-100k/u.item
-     ml-100k/u.user
-
-Install dependencies first:
-    pip install pandas numpy matplotlib
+Expects the MovieLens 100K dataset (from https://grouplens.org/datasets/movielens/)
+unzipped into an ml-100k/ folder alongside this script.
 """
 
 import pandas as pd
@@ -20,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # -----------------------------------------------------------
-# STEP 1: Load the data
+# Load the data
 # -----------------------------------------------------------
 
 # u.data: user_id, movie_id, rating, timestamp (tab-separated, no header)
@@ -46,7 +40,7 @@ print(ratings.head())
 print(movies.head())
 
 # -----------------------------------------------------------
-# STEP 2: Quick exploration (keep this brief, 1-2 hrs max)
+# Quick exploration
 # -----------------------------------------------------------
 
 # Distribution of ratings (1-5 stars)
@@ -81,9 +75,8 @@ print("\nTop 10 most-rated movies:")
 print(most_rated[['title', 'num_ratings']])
 
 # -----------------------------------------------------------
-# STEP 3: Build the user-movie rating matrix
-# (mirrors the Y matrix from Andrew Ng's course:
-#  rows = movies, columns = users)
+# Build the user-movie rating matrix
+# (rows = movies, columns = users)
 # -----------------------------------------------------------
 
 # Pivot: rows=movie_id, cols=user_id, values=rating
@@ -99,8 +92,7 @@ print(f"\nY shape: {Y.shape}  (movies x users)")
 print(f"R shape: {R.shape}  (1 = rated, 0 = not rated)")
 
 # -----------------------------------------------------------
-# STEP 4: Non-personalized baseline recommender
-# (this is your "before" comparison point for later)
+# Non-personalized baseline recommender
 # -----------------------------------------------------------
 
 def baseline_recommend(n=5):
@@ -115,9 +107,9 @@ print("\nBaseline recommendations (top-rated movies overall):")
 print(baseline_recommend(5))
 
 # -----------------------------------------------------------
-# Save processed data for Day 2+ (collaborative filtering)
+# Save processed data for the collaborative filtering step
 # -----------------------------------------------------------
 np.save('Y.npy', Y)
 np.save('R.npy', R)
 R_df.index.to_series().to_csv('movie_ids.csv', index=False)
-print("\nSaved Y.npy, R.npy, movie_ids.csv for tomorrow's collaborative filtering step.")
+print("\nSaved Y.npy, R.npy, movie_ids.csv for the collaborative filtering step.")

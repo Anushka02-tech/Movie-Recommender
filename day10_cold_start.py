@@ -1,18 +1,16 @@
 """
-DAY 10: Cold-Start Handling
-=============================
-Problem: collaborative filtering can only make good predictions for users
-who already have ratings in the training data. A brand-new user (or one
+Cold-Start Handling
+======================
+Collaborative filtering can only make good predictions for users who
+already have ratings in the training data. A brand-new user (or one
 with very few ratings) has an unreliable/untrained Theta vector, so
 predictions for them are unreliable too.
 
-Fix: if a user has fewer than MIN_RATINGS_THRESHOLD ratings, don't trust
-the collaborative filtering model for them -- fall back to popularity-based
-recommendations instead (same logic as the Day 1 baseline).
+Fix: if a user has fewer than MIN_RATINGS_THRESHOLD ratings, fall back
+to popularity-based recommendations instead.
 
-This script wraps the existing recommend() function with that check.
-Run this AFTER day1_setup.py and day3to5_collaborative_filtering.py
-(needs their saved .npy/.csv files).
+Requires the .npy/.csv files produced by day1_setup.py and
+Day3to5_collaborative_filtering.py.
 """
 
 import numpy as np
@@ -35,7 +33,7 @@ R = np.load('R.npy')
 predictions = X @ Theta.T + Y_mean.reshape(-1, 1)
 
 # -----------------------------------------------------------
-# Popularity-based fallback (same as Day 1's baseline)
+# Popularity-based fallback
 # -----------------------------------------------------------
 
 def popularity_recommend(n=5, min_ratings=20, exclude_movie_ids=None):
@@ -49,7 +47,7 @@ def popularity_recommend(n=5, min_ratings=20, exclude_movie_ids=None):
     return result[['title', 'mean', 'count']].rename(columns={'mean': 'avg_rating'})
 
 # -----------------------------------------------------------
-# Personalized recommend (same as Days 3-5)
+# Personalized recommend (same approach as the training script)
 # -----------------------------------------------------------
 
 def personalized_recommend(user_idx, n=5, min_ratings=20):

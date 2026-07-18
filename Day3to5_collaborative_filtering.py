@@ -1,8 +1,8 @@
 """
-DAYS 3-5: Collaborative Filtering From Scratch
-================================================
-Implements the exact algorithm from Andrew Ng's Machine Learning course
-(Week 9 / Recommender Systems module):
+Collaborative Filtering From Scratch
+======================================
+Implements the collaborative filtering algorithm from Andrew Ng's Machine
+Learning course (Recommender Systems module):
 
     Cost function:
         J = 1/2 * sum over (i,j) where R(i,j)=1 of (X[i] . Theta[j] - Y[i,j])^2
@@ -14,17 +14,17 @@ Implements the exact algorithm from Andrew Ng's Machine Learning course
     Y     = ratings matrix (movies x users), 0 where unrated
     R     = binary mask, 1 if rated
 
-We learn X and Theta via gradient descent so that X[i] . Theta[j]
+X and Theta are learned via gradient descent so that X[i] . Theta[j]
 approximates the rating user j would give movie i.
 
-Run this AFTER day1_setup.py (it needs Y.npy and R.npy).
+Requires Y.npy and R.npy from day1_setup.py.
 """
 
 import numpy as np
 import pandas as pd
 
 # -----------------------------------------------------------
-# STEP 1: Load data saved from Day 1
+# Load data
 # -----------------------------------------------------------
 
 Y = np.load('Y.npy')   # shape: (num_movies, num_users)
@@ -34,7 +34,7 @@ num_movies, num_users = Y.shape
 print(f"Loaded Y: {Y.shape}, R: {R.shape}")
 
 # -----------------------------------------------------------
-# STEP 2: Mean-normalize the ratings (IMPORTANT — easy to forget)
+# Mean-normalize the ratings
 # -----------------------------------------------------------
 # Without this, users who haven't rated anything would just get
 # predictions of 0 for everything, which is meaningless.
@@ -57,7 +57,7 @@ Y_norm, Y_mean = normalize_ratings(Y, R)
 print("Ratings mean-normalized per movie.")
 
 # -----------------------------------------------------------
-# STEP 3: Cost function + gradients
+# Cost function + gradients
 # -----------------------------------------------------------
 
 def cost_function(params, Y, R, num_users, num_movies, num_features, lam):
@@ -87,7 +87,7 @@ def cost_function(params, Y, R, num_users, num_movies, num_features, lam):
     return J, grad
 
 # -----------------------------------------------------------
-# STEP 4: Train with gradient descent
+# Train with gradient descent
 # -----------------------------------------------------------
 
 def train_collaborative_filtering(Y, R, num_features=10, lam=10, alpha=0.001,
@@ -101,7 +101,7 @@ def train_collaborative_filtering(Y, R, num_features=10, lam=10, alpha=0.001,
     np.random.seed(seed)
     num_movies, num_users = Y.shape
 
-    # Initialize X and Theta randomly (small values, like the course does)
+    # Initialize X and Theta randomly (small values)
     X = np.random.randn(num_movies, num_features) * 0.1
     Theta = np.random.randn(num_users, num_features) * 0.1
 
@@ -119,7 +119,7 @@ def train_collaborative_filtering(Y, R, num_features=10, lam=10, alpha=0.001,
     Theta = params[num_movies * num_features:].reshape(num_users, num_features)
     return X, Theta, costs
 
-print("\nTraining collaborative filtering model on the larger dataset (may take a few minutes)...")
+print("\nTraining collaborative filtering model (this may take a few minutes)...")
 X, Theta, costs = train_collaborative_filtering(
     Y_norm, R,
     num_features=15,
@@ -129,7 +129,7 @@ X, Theta, costs = train_collaborative_filtering(
 )
 
 # -----------------------------------------------------------
-# STEP 5: Generate predictions and recommendations
+# Generate predictions and recommendations
 # -----------------------------------------------------------
 
 # Full predicted ratings matrix, adding back the per-movie mean we subtracted
@@ -170,9 +170,9 @@ print("\nTop 5 recommendations for user_id=50:")
 print(recommend(user_idx=49, n=5))
 
 # -----------------------------------------------------------
-# Save everything for Week 2 (evaluation + Streamlit app)
+# Save trained model for evaluation and the Streamlit app
 # -----------------------------------------------------------
 np.save('X_trained.npy', X)
 np.save('Theta_trained.npy', Theta)
 np.save('Y_mean.npy', Y_mean)
-print("\nSaved X_trained.npy, Theta_trained.npy, Y_mean.npy for evaluation step.")
+print("\nSaved X_trained.npy, Theta_trained.npy, Y_mean.npy for evaluation.")

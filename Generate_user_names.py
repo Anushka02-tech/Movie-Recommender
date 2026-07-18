@@ -1,14 +1,13 @@
 """
-UPGRADE: Friendly Display Names for Users
-============================================
+Friendly Display Names for Users
+====================================
 The MovieLens data is fully anonymized -- there are no real names, just
 numeric user IDs. This script assigns a FICTIONAL display name to each
 user ID, purely to make the demo more presentable.
 
-IMPORTANT: these names are NOT real people. They're synthetic labels,
-deterministically assigned so the same user always gets the same name.
-Worth stating this clearly in your app/report so nobody mistakes them
-for real identities.
+These names are not real people. They're synthetic labels, deterministically
+assigned so the same user always gets the same name -- worth stating clearly
+in the app so nobody mistakes them for real identities.
 """
 
 import pandas as pd
