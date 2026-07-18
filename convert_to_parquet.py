@@ -1,0 +1,1 @@
+import pandas as pd; df = pd.read_csv('ratings_25m_filtered.csv'); df.to_parquet('ratings_25m_filtered.parquet', index=False)

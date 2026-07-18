@@ -1,0 +1,1 @@
+import numpy as np; R = np.load('R.npy'); R_small = R.astype(bool); np.save('R.npy', R_small)
