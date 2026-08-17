@@ -1,26 +1,7 @@
-"""
-Cold-Start Handling
-======================
-Collaborative filtering can only make good predictions for users who
-already have ratings in the training data. A brand-new user (or one
-with very few ratings) has an unreliable/untrained Theta vector, so
-predictions for them are unreliable too.
-
-Fix: if a user has fewer than MIN_RATINGS_THRESHOLD ratings, fall back
-to popularity-based recommendations instead.
-
-Requires the .npy/.csv files produced by day1_setup.py and
-Day3to5_collaborative_filtering.py.
-"""
-
 import numpy as np
 import pandas as pd
 
-MIN_RATINGS_THRESHOLD = 5  # users with fewer ratings than this get the fallback
-
-# -----------------------------------------------------------
-# Load everything from previous steps
-# -----------------------------------------------------------
+MIN_RATINGS_THRESHOLD = 5  
 
 movies = pd.read_csv('movies_25m.csv')[['movie_id', 'title']]
 ratings = pd.read_csv('ratings_25m_filtered.csv')
@@ -32,10 +13,6 @@ R = np.load('R.npy')
 
 predictions = X @ Theta.T + Y_mean.reshape(-1, 1)
 
-# -----------------------------------------------------------
-# Popularity-based fallback
-# -----------------------------------------------------------
-
 def popularity_recommend(n=5, min_ratings=20, exclude_movie_ids=None):
     """Top-rated movies overall, ignoring the user entirely."""
     stats = ratings.groupby('movie_id')['rating'].agg(['mean', 'count'])
@@ -45,10 +22,6 @@ def popularity_recommend(n=5, min_ratings=20, exclude_movie_ids=None):
     top_n = stats.sort_values('mean', ascending=False).head(n)
     result = top_n.merge(movies, on='movie_id')
     return result[['title', 'mean', 'count']].rename(columns={'mean': 'avg_rating'})
-
-# -----------------------------------------------------------
-# Personalized recommend (same approach as the training script)
-# -----------------------------------------------------------
 
 def personalized_recommend(user_idx, n=5, min_ratings=20):
     user_ratings = predictions[:, user_idx]
@@ -67,21 +40,11 @@ def personalized_recommend(user_idx, n=5, min_ratings=20):
     result = result.merge(movies, on='movie_id')
     return result[['title', 'predicted_rating']]
 
-# -----------------------------------------------------------
-# THE MAIN FUNCTION: handles cold-start automatically
-# -----------------------------------------------------------
-
 def recommend_with_cold_start(user_id, all_user_ids, n=5):
-    """
-    Smart recommend function that:
-    - Uses personalized collaborative filtering if the user has enough ratings
-    - Falls back to popularity-based recommendations otherwise
-    Returns (recommendations_df, method_used)
-    """
+
     num_user_ratings = (ratings['user_id'] == user_id).sum()
 
     if user_id not in all_user_ids or num_user_ratings < MIN_RATINGS_THRESHOLD:
-        # New user OR user with too few ratings -> fallback
         recs = popularity_recommend(n=n)
         return recs, "popularity-based (cold-start fallback)"
     else:
@@ -89,27 +52,20 @@ def recommend_with_cold_start(user_id, all_user_ids, n=5):
         recs = personalized_recommend(user_idx, n=n)
         return recs, "personalized (collaborative filtering)"
 
-# -----------------------------------------------------------
-# Demo / test
-# -----------------------------------------------------------
-
 all_user_ids = sorted(ratings['user_id'].unique())
-real_existing_user = all_user_ids[0]  # guaranteed to exist in this filtered dataset
+real_existing_user = all_user_ids[0] 
 
-# Test case 1: a normal, existing user (should use personalized)
 print(f"--- User {real_existing_user} (existing user, plenty of ratings) ---")
 recs, method = recommend_with_cold_start(user_id=real_existing_user, all_user_ids=all_user_ids, n=5)
 print(f"Method used: {method}")
 print(recs)
 
-# Test case 2: simulate a brand-new user (id that doesn't exist in the data)
-fake_user_id = max(all_user_ids) + 9999  # guaranteed NOT to exist
+fake_user_id = max(all_user_ids) + 9999 
 print(f"\n--- User {fake_user_id} (simulated brand-new user) ---")
 recs, method = recommend_with_cold_start(user_id=fake_user_id, all_user_ids=all_user_ids, n=5)
 print(f"Method used: {method}")
 print(recs)
 
-# Test case 3: find a real user with very few ratings, if one exists
 rating_counts = ratings.groupby('user_id').size()
 sparse_users = rating_counts[rating_counts < MIN_RATINGS_THRESHOLD]
 if len(sparse_users) > 0:

@@ -1,28 +1,9 @@
-"""
-Evaluation: Train/Test Split + RMSE
-======================================
-Holds out a test set of ratings, trains only on the rest, then measures
-RMSE (Root Mean Squared Error) between predicted and actual held-out
-ratings. Lower is better; a perfect model scores 0.
-
-Requires ratings_25m_filtered.csv from day1_setup.py.
-"""
-
 import numpy as np
 import pandas as pd
 
 np.random.seed(42)
 
-# -----------------------------------------------------------
-# Load raw ratings (not the pre-built Y/R this time,
-# because the split needs to happen before building the matrix)
-# -----------------------------------------------------------
-
 ratings = pd.read_csv('ratings_25m_filtered.csv')
-
-# -----------------------------------------------------------
-# Train/test split (80/20)
-# -----------------------------------------------------------
 
 shuffled = ratings.sample(frac=1, random_state=42).reset_index(drop=True)
 split_point = int(0.8 * len(shuffled))
@@ -30,11 +11,6 @@ train_df = shuffled.iloc[:split_point]
 test_df = shuffled.iloc[split_point:]
 
 print(f"Train ratings: {len(train_df)}, Test ratings: {len(test_df)}")
-
-# -----------------------------------------------------------
-# Build Y_train / R_train from the training set only
-# (test ratings are treated as if they don't exist, during training)
-# -----------------------------------------------------------
 
 all_movie_ids = sorted(ratings['movie_id'].unique())
 all_user_ids = sorted(ratings['user_id'].unique())
@@ -54,10 +30,6 @@ R_train[train_movie_indices, train_user_indices] = 1
 
 print(f"Y_train shape: {Y_train.shape}")
 
-# -----------------------------------------------------------
-# Mean-normalize (using training data only)
-# -----------------------------------------------------------
-
 def normalize_ratings(Y, R):
     m = Y.shape[0]
     Y_mean = np.zeros(m)
@@ -70,10 +42,6 @@ def normalize_ratings(Y, R):
     return Y_norm, Y_mean
 
 Y_norm, Y_mean = normalize_ratings(Y_train, R_train)
-
-# -----------------------------------------------------------
-# Train the model (same approach as the full training script)
-# -----------------------------------------------------------
 
 def cost_function(params, Y, R, num_users, num_movies, num_features, lam):
     X = params[:num_movies * num_features].reshape(num_movies, num_features)
@@ -110,10 +78,6 @@ X, Theta = train_collaborative_filtering(Y_norm, R_train, num_features=15,
 
 predictions = X @ Theta.T + Y_mean.reshape(-1, 1)
 
-# -----------------------------------------------------------
-# Evaluate on the held-out test set (ratings the model never saw)
-# -----------------------------------------------------------
-
 def rmse(predictions, df, movie_id_to_idx, user_id_to_idx):
     movie_indices = df['movie_id'].map(movie_id_to_idx).values
     user_indices = df['user_id'].map(user_id_to_idx).values
@@ -124,21 +88,12 @@ def rmse(predictions, df, movie_id_to_idx, user_id_to_idx):
 cf_rmse = rmse(predictions, test_df, movie_id_to_idx, user_id_to_idx)
 print(f"\nCollaborative Filtering RMSE on test set: {cf_rmse:.4f}")
 
-# -----------------------------------------------------------
-# Compare against the baseline (predict each movie's
-# average rating from the TRAINING set, for every user)
-# -----------------------------------------------------------
-
 train_movie_means = train_df.groupby('movie_id')['rating'].mean()
 global_mean = train_df['rating'].mean()  # fallback for movies unseen in training
 
 test_baseline_preds = test_df['movie_id'].map(train_movie_means).fillna(global_mean).values
 baseline_rmse = np.sqrt(np.mean((test_baseline_preds - test_df['rating'].values) ** 2))
 print(f"Baseline (movie average) RMSE on test set: {baseline_rmse:.4f}")
-
-# -----------------------------------------------------------
-# Summary
-# -----------------------------------------------------------
 
 improvement = (baseline_rmse - cf_rmse) / baseline_rmse * 100
 print(f"\n{'='*50}")

@@ -1,34 +1,10 @@
-"""
-UPGRADE - ml-25m Data Pipeline
-=================================
-ml-25m has ~25 million ratings, ~162,000 users, ~62,000 movies.
-Building a dense (movies x users) matrix from the FULL dataset would need
-roughly 80GB of memory -- not feasible on a laptop.
-
-Solution: filter down to the most active users and most-rated movies.
-This is standard practice in real recommender systems (focus compute on
-"warm" users with enough history; handle everyone else via cold-start
-fallback, which you already built). We'll keep this filtered-but-large
-subset, and document the filtering clearly in the report.
-
-Output format matches your existing scripts (Y.npy, R.npy, movie_ids.csv),
-so day3to5 / day8to9 / day10 / app.py only need their file paths updated.
-"""
-
 import pandas as pd
 import numpy as np
 
-# -----------------------------------------------------------
-# Tunable thresholds -- adjust these if you want a bigger/smaller matrix
-# -----------------------------------------------------------
-MOVIE_MIN_RATINGS = 100    # a movie needs at least this many ratings to be kept
-USER_MIN_RATINGS = 50      # a user needs at least this many ratings to be kept
-MAX_USERS = 8000           # hard cap -- keeps memory usage safe
-MAX_MOVIES = 4000          # hard cap -- keeps memory usage safe
-
-# -----------------------------------------------------------
-# STEP 1: Load raw data (ml-25m uses commas + headers, unlike ml-1m/ml-100k)
-# -----------------------------------------------------------
+MOVIE_MIN_RATINGS = 100    
+USER_MIN_RATINGS = 50     
+MAX_USERS = 8000           
+MAX_MOVIES = 4000          
 
 print("Loading ratings.csv (this is a big file, may take a minute)...")
 ratings = pd.read_csv('ml-25m/ratings.csv')  # columns: userId, movieId, rating, timestamp
@@ -40,21 +16,14 @@ movies = movies.rename(columns={'movieId': 'movie_id'})
 print(f"Raw: {len(ratings):,} ratings, {ratings['user_id'].nunique():,} users, "
       f"{ratings['movie_id'].nunique():,} movies")
 
-# -----------------------------------------------------------
-# STEP 2: Filter down to a tractable, still-substantial subset
-# -----------------------------------------------------------
-
-# Pass 1: keep movies with enough ratings
 movie_counts = ratings.groupby('movie_id').size()
 keep_movies = movie_counts[movie_counts >= MOVIE_MIN_RATINGS].index
 ratings = ratings[ratings['movie_id'].isin(keep_movies)]
 
-# Pass 2: keep users with enough ratings (within the filtered movie set)
 user_counts = ratings.groupby('user_id').size()
 keep_users = user_counts[user_counts >= USER_MIN_RATINGS].index
 ratings = ratings[ratings['user_id'].isin(keep_users)]
 
-# Pass 3: if still too big, cap to the MOST ACTIVE users/movies
 user_counts = ratings.groupby('user_id').size().sort_values(ascending=False)
 if len(user_counts) > MAX_USERS:
     top_users = user_counts.head(MAX_USERS).index
@@ -69,10 +38,6 @@ print(f"\nFiltered: {len(ratings):,} ratings, {ratings['user_id'].nunique():,} u
       f"{ratings['movie_id'].nunique():,} movies")
 print(f"(Filtered from the full 25M-rating dataset to the most active users "
       f"and most-rated movies, to keep the matrix a manageable size.)")
-
-# -----------------------------------------------------------
-# STEP 3: Parse genres (for the hybrid model in Days 3-4)
-# -----------------------------------------------------------
 
 kept_movie_ids = ratings['movie_id'].unique()
 movies = movies[movies['movie_id'].isin(kept_movie_ids)].copy()
@@ -90,10 +55,6 @@ for _, row in movies.iterrows():
             genre_matrix.loc[row['movie_id'], g] = 1
 genre_matrix.to_csv('genre_matrix.csv')
 print("Saved genre_matrix.csv")
-
-# -----------------------------------------------------------
-# STEP 4: Build the rating matrix (vectorized -- important at this scale)
-# -----------------------------------------------------------
 
 all_movie_ids = sorted(ratings['movie_id'].unique())
 all_user_ids = sorted(ratings['user_id'].unique())
@@ -115,11 +76,6 @@ R[movie_indices, user_indices] = 1
 
 sparsity = 1 - (len(ratings) / (num_movies * num_users))
 print(f"Sparsity: {sparsity:.2%}")
-
-# -----------------------------------------------------------
-# STEP 5: Save (same filenames as before, so other scripts still work
-# once you point them at 'ml-25m' instead of 'ml-100k'/'ml-1m')
-# -----------------------------------------------------------
 
 np.save('Y.npy', Y)
 np.save('R.npy', R)

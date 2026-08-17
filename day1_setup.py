@@ -1,30 +1,13 @@
-"""
-Movie Recommender System - Data Exploration & Baseline
-========================================================
-Loads the MovieLens 100K ratings data, explores basic statistics,
-builds the user-movie rating matrix, and establishes a non-personalized
-baseline recommender to compare the collaborative filtering model against.
-
-Expects the MovieLens 100K dataset (from https://grouplens.org/datasets/movielens/)
-unzipped into an ml-100k/ folder alongside this script.
-"""
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# -----------------------------------------------------------
-# Load the data
-# -----------------------------------------------------------
-
-# u.data: user_id, movie_id, rating, timestamp (tab-separated, no header)
 ratings = pd.read_csv(
     'ml-100k/u.data',
     sep='\t',
     names=['user_id', 'movie_id', 'rating', 'timestamp']
 )
 
-# u.item: movie_id, title, release_date, ... (pipe-separated, latin-1 encoding)
 movies = pd.read_csv(
     'ml-100k/u.item',
     sep='|',
@@ -39,11 +22,6 @@ print("Movies shape:", movies.shape)
 print(ratings.head())
 print(movies.head())
 
-# -----------------------------------------------------------
-# Quick exploration
-# -----------------------------------------------------------
-
-# Distribution of ratings (1-5 stars)
 plt.figure()
 ratings['rating'].value_counts().sort_index().plot(kind='bar')
 plt.title('Distribution of Ratings')
@@ -58,12 +36,10 @@ n_ratings = len(ratings)
 
 print(f"\nUsers: {n_users}, Movies: {n_movies}, Ratings: {n_ratings}")
 
-# Sparsity: what % of the user-movie matrix is actually filled in?
 possible_ratings = n_users * n_movies
 sparsity = 1 - (n_ratings / possible_ratings)
 print(f"Sparsity: {sparsity:.2%} of the matrix is EMPTY (this is normal and expected)")
 
-# Top 10 most-rated movies (worth mentioning in your writeup)
 most_rated = (
     ratings.groupby('movie_id').size()
     .sort_values(ascending=False)
@@ -74,29 +50,16 @@ most_rated = (
 print("\nTop 10 most-rated movies:")
 print(most_rated[['title', 'num_ratings']])
 
-# -----------------------------------------------------------
-# Build the user-movie rating matrix
-# (rows = movies, columns = users)
-# -----------------------------------------------------------
-
-# Pivot: rows=movie_id, cols=user_id, values=rating
 R_df = ratings.pivot(index='movie_id', columns='user_id', values='rating')
 
-# Y: the rating matrix, with 0 where there's no rating
 Y = R_df.fillna(0).values
 
-# R: binary mask, 1 if the movie WAS rated by that user, 0 otherwise
 R = (~R_df.isna()).astype(int).values
 
 print(f"\nY shape: {Y.shape}  (movies x users)")
 print(f"R shape: {R.shape}  (1 = rated, 0 = not rated)")
 
-# -----------------------------------------------------------
-# Non-personalized baseline recommender
-# -----------------------------------------------------------
-
 def baseline_recommend(n=5):
-    """Recommend the n highest-average-rated movies (min 20 ratings to avoid noise)."""
     stats = ratings.groupby('movie_id')['rating'].agg(['mean', 'count'])
     stats = stats[stats['count'] >= 20]  # filter out movies with too few ratings
     top_n = stats.sort_values('mean', ascending=False).head(n)
@@ -106,9 +69,6 @@ def baseline_recommend(n=5):
 print("\nBaseline recommendations (top-rated movies overall):")
 print(baseline_recommend(5))
 
-# -----------------------------------------------------------
-# Save processed data for the collaborative filtering step
-# -----------------------------------------------------------
 np.save('Y.npy', Y)
 np.save('R.npy', R)
 R_df.index.to_series().to_csv('movie_ids.csv', index=False)

@@ -1,8 +1,8 @@
-# 🎬 Movie Recommender System
+# Movie Recommender System
 
 A collaborative filtering recommender system built from scratch, based on the algorithm taught in Andrew Ng's Machine Learning course (Coursera). Trained on a filtered subset of the MovieLens 25M dataset, and deployed as a live interactive web app.
 
-**🔗 Live demo:** [movie-recommender-aiwpdnfztxxvjwgu9z95xk.streamlit.app](https://movie-recommender-aiwpdnfztxxvjwgu9z95xk.streamlit.app)
+**Live demo:** [movie-recommender-aiwpdnfztxxvjwgu9z95xk.streamlit.app](https://movie-recommender-aiwpdnfztxxvjwgu9z95xk.streamlit.app)
 
 ## Problem Statement
 

@@ -1,21 +1,7 @@
-"""
-Friendly Display Names for Users
-====================================
-The MovieLens data is fully anonymized -- there are no real names, just
-numeric user IDs. This script assigns a FICTIONAL display name to each
-user ID, purely to make the demo more presentable.
-
-These names are not real people. They're synthetic labels, deterministically
-assigned so the same user always gets the same name -- worth stating clearly
-in the app so nobody mistakes them for real identities.
-"""
-
 import pandas as pd
 import numpy as np
 import itertools
 
-# A larger pool of first/last names. We need FIRST x LAST >= number of users
-# (8,000) with real headroom, or collisions force ugly numeric suffixes.
 FIRST_NAMES = [
     "Alex", "Jordan", "Taylor", "Morgan", "Casey", "Riley", "Jamie", "Avery",
     "Quinn", "Reese", "Rowan", "Skyler", "Dakota", "Emerson", "Finley", "Harper",
@@ -47,11 +33,6 @@ LAST_NAMES = [
     "Wilder", "Ximenes", "Yildiz", "Zamora", "Aoki", "Baptiste", "Correa", "Duarte",
     "Ekstrom", "Falk", "Guo", "Hernandez", "Iyer", "Jaramillo", "Kobayashi", "Leung",
 ]
-
-# -----------------------------------------------------------
-# Generate a guaranteed-unique pool via all First x Last combinations,
-# shuffle deterministically, then assign one to each user_id.
-# -----------------------------------------------------------
 
 user_ids = pd.read_csv('user_ids.csv')['user_id'].values
 print(f"Generating display names for {len(user_ids)} users...")
