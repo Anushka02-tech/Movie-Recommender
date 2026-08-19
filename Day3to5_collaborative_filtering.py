@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-Y = np.load('Y.npy')   # shape: (num_movies, num_users)
-R = np.load('R.npy')   # shape: (num_movies, num_users), 1 = rated
+Y = np.load('Y.npy')  
+R = np.load('R.npy')   
 
 num_movies, num_users = Y.shape
 print(f"Loaded Y: {Y.shape}, R: {R.shape}")

@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import re
 
-st.set_page_config(page_title="Movie Recommender", page_icon="🎬", layout="wide")
+st.set_page_config(page_title="Movie Recommender", layout="wide")
 
 TMDB_API_KEY = st.secrets.get("tmdb_api_key", None)
 
@@ -130,8 +130,7 @@ def get_user_history(user_id, n=5):
     return result[['title', 'rating']]
 
 st.title("Movie Recommender System")
-st.caption("Built with collaborative filtering (gradient descent), trained from scratch on a 6.4M-rating subset of MovieLens 25M")
-st.caption("Display names are randomly generated for demo purposes — the underlying MovieLens data is fully anonymized (no real names).")
+st.caption("Display names are randomly generated for demo purposes, the underlying MovieLens data is fully anonymized.")
 
 with st.sidebar:
     st.header("Settings")
@@ -178,7 +177,7 @@ if get_recs_clicked:
         if selected_user is not None:
             num_ratings = (ratings['user_id'] == selected_user).sum()
         else:
-            num_ratings = 0  # new user has no ratings
+            num_ratings = 0  
 
         use_personalized = selected_user is not None and num_ratings >= MIN_RATINGS_THRESHOLD
 
@@ -196,7 +195,7 @@ if get_recs_clicked:
         recs = recs.copy()
         recs["poster_url"] = recs["title"].apply(fetch_poster_url)
 
-    st.toast("Recommendations ready!", icon="🎬")
+    st.toast("Recommendations ready!")
 
     with st.expander(
         f"Based on: {selected_name}'s ratings" if selected_name else "Based on: your stated preferences",
