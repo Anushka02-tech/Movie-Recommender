@@ -130,7 +130,7 @@ def get_user_history(user_id, n=5):
     return result[['title', 'rating']]
 
 st.title("Movie Recommender System")
-st.caption("Display names are randomly generated for demo purposes, the underlying MovieLens data is fully anonymized.")
+st.caption("Display names are randomly generated for demo purposes, the underlying MovieLens data is fully anonymized (no real names).")
 
 with st.sidebar:
     st.header("Settings")
@@ -240,9 +240,3 @@ if get_recs_clicked:
                 st.caption(f"predicted {movie['predicted_rating']:.2f}")
 
 st.divider()
-st.caption(
-    "Model: collaborative filtering with 15 latent features, trained via gradient descent "
-    "with L2 regularization on 6.46 million ratings (filtered from MovieLens 25M to the "
-    "8,000 most active users and 4,000 most-rated movies). "
-    "Test RMSE: 0.7227 (vs. 0.9220 for a popularity baseline — a 21.6% improvement)."
-)
